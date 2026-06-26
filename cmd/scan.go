@@ -19,7 +19,6 @@ var scanCmd = &cobra.Command{
 
 		if err := orchestrator.Start(args[0]); err != nil {
 			fmt.Println("[ERROR]", err)
-			return
 		}
 	},
 }

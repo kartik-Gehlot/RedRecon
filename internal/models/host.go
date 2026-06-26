@@ -4,6 +4,8 @@ type Host struct {
 	Hostname     string
 	IP           string
 	Alive        bool
-	Ports        []int
+	StatusCode   int
+	Title        string
 	Technologies []string
+	Ports        []int
 }

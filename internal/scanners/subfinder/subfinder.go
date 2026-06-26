@@ -40,9 +40,5 @@ func Run(scan *models.Scan) error {
 		return err
 	}
 
-	if err := cmd.Wait(); err != nil {
-		return err
-	}
-
-	return nil
+	return cmd.Wait()
 }
