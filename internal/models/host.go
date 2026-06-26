@@ -8,4 +8,5 @@ type Host struct {
 	Title        string
 	Technologies []string
 	Ports        []int
+	URLs         []string
 }

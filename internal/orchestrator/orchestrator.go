@@ -6,6 +6,8 @@ import (
 
 	"github.com/kartik-Gehlot/RedRecon/internal/models"
 	httpx "github.com/kartik-Gehlot/RedRecon/internal/scanners/httpx"
+	katana "github.com/kartik-Gehlot/RedRecon/internal/scanners/katana"
+	naabu "github.com/kartik-Gehlot/RedRecon/internal/scanners/naabu"
 	subfinder "github.com/kartik-Gehlot/RedRecon/internal/scanners/subfinder"
 	"github.com/kartik-Gehlot/RedRecon/internal/validator"
 )
@@ -35,6 +37,17 @@ func Start(target string) error {
 	if err := httpx.Run(&scan); err != nil {
 		return err
 	}
+	fmt.Println("[INFO] Running Naabu...")
+
+	if err := naabu.Run(&scan); err != nil {
+		return err
+	}
+	fmt.Println("[INFO] Running Katana...")
+
+	if err := katana.Run(&scan); err != nil {
+		return err
+	}
+
 	scan.EndTime = time.Now()
 	scan.Status = "Completed"
 
@@ -48,7 +61,8 @@ func Start(target string) error {
 		fmt.Println("IP          :", host.IP)
 		fmt.Println("Status Code :", host.StatusCode)
 		fmt.Println("Title       :", host.Title)
-
+		fmt.Println("Ports       :", host.Ports)
+		fmt.Println("URLs Found   :", len(host.URLs))
 		if len(host.Technologies) > 0 {
 			fmt.Println("Technologies:", host.Technologies)
 		}
