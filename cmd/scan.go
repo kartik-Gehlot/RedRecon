@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/kartik-Gehlot/RedRecon/internal/orchestrator"
-	"github.com/kartik-Gehlot/RedRecon/internal/validator"
 	"github.com/spf13/cobra"
 )
 
@@ -18,22 +17,10 @@ var scanCmd = &cobra.Command{
 			return
 		}
 
-		target := args[0]
-
-		err := validator.ValidateTarget(target)
-
-		if err != nil {
-			fmt.Println("❌", err)
+		if err := orchestrator.Start(args[0]); err != nil {
+			fmt.Println("[ERROR]", err)
 			return
 		}
-
-		fmt.Println("✅ Target Valid:", target)
-		err = orchestrator.Start(target)
-		if err != nil {
-			fmt.Println("❌", err)
-			return
-		}
-
 	},
 }
 

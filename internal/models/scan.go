@@ -1,7 +1,14 @@
 package models
 
-type Scan struct {
-	Target string
+import "time"
 
-	Subdomains []string
+type Scan struct {
+	Target    string
+	Status    string
+	Version   string
+	StartTime time.Time
+	EndTime   time.Time
+	RiskScore float64
+
+	Hosts []Host
 }
