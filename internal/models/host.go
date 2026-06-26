@@ -9,4 +9,7 @@ type Host struct {
 	Technologies []string
 	Ports        []int
 	URLs         []string
+	JavaScripts  []string
+	Secrets      []string
+	Findings     []string
 }
