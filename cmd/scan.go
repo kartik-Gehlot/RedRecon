@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/kartik-Gehlot/RedRecon/internal/orchestrator"
 	"github.com/kartik-Gehlot/RedRecon/internal/validator"
 	"github.com/spf13/cobra"
 )
@@ -12,8 +13,6 @@ var scanCmd = &cobra.Command{
 	Short: "Scan a target",
 	Run: func(cmd *cobra.Command, args []string) {
 
-		fmt.Printf("Args: %#v\n", args)
-		fmt.Printf("Length: %d\n", len(args))
 		if len(args) == 0 {
 			fmt.Println("Please provide a target")
 			return
@@ -29,6 +28,11 @@ var scanCmd = &cobra.Command{
 		}
 
 		fmt.Println("✅ Target Valid:", target)
+		err = orchestrator.Start(target)
+		if err != nil {
+			fmt.Println("❌", err)
+			return
+		}
 
 	},
 }
