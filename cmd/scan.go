@@ -7,11 +7,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// var profile string
 var scanCmd = &cobra.Command{
 	Use:   "scan",
 	Short: "Scan a target",
 	Run: func(cmd *cobra.Command, args []string) {
-
 		if len(args) == 0 {
 			fmt.Println("Please provide a target")
 			return
@@ -25,4 +25,5 @@ var scanCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(scanCmd)
+	
 }

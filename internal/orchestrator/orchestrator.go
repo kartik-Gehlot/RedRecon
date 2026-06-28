@@ -5,11 +5,15 @@ import (
 	"time"
 
 	"github.com/kartik-Gehlot/RedRecon/internal/models"
-	gau "github.com/kartik-Gehlot/RedRecon/internal/scanners/gau"
-	httpx "github.com/kartik-Gehlot/RedRecon/internal/scanners/httpx"
+	"github.com/kartik-Gehlot/RedRecon/internal/output"
+	"github.com/kartik-Gehlot/RedRecon/internal/report"
+
+	//	gau "github.com/kartik-Gehlot/RedRecon/internal/scanners/gau"
+	github "github.com/kartik-Gehlot/RedRecon/internal/scanners/github"
+	//	httpx "github.com/kartik-Gehlot/RedRecon/internal/scanners/httpx"
 	javascript "github.com/kartik-Gehlot/RedRecon/internal/scanners/javascript"
-	katana "github.com/kartik-Gehlot/RedRecon/internal/scanners/katana"
-	naabu "github.com/kartik-Gehlot/RedRecon/internal/scanners/naabu"
+	//	katana "github.com/kartik-Gehlot/RedRecon/internal/scanners/katana"
+	//	naabu "github.com/kartik-Gehlot/RedRecon/internal/scanners/naabu"
 	"github.com/kartik-Gehlot/RedRecon/internal/scanners/nuclei"
 	secrets "github.com/kartik-Gehlot/RedRecon/internal/scanners/secrets"
 	subfinder "github.com/kartik-Gehlot/RedRecon/internal/scanners/subfinder"
@@ -36,26 +40,26 @@ func Start(target string) error {
 	if err := subfinder.Run(&scan); err != nil {
 		return err
 	}
-	fmt.Println("[INFO] Running Httpx...")
+	// fmt.Println("[INFO] Running Httpx...")
 
-	if err := httpx.Run(&scan); err != nil {
-		return err
-	}
-	fmt.Println("[INFO] Running Naabu...")
+	// if err := httpx.Run(&scan); err != nil {
+	// 	return err
+	// }
+	// fmt.Println("[INFO] Running Naabu...")
 
-	if err := naabu.Run(&scan); err != nil {
-		return err
-	}
-	fmt.Println("[INFO] Running Katana...")
+	// if err := naabu.Run(&scan); err != nil {
+	// 	return err
+	// }
+	// fmt.Println("[INFO] Running Katana...")
 
-	if err := katana.Run(&scan); err != nil {
-		return err
-	}
-	fmt.Println("[INFO] Running GAU...")
+	// if err := katana.Run(&scan); err != nil {
+	// 	return err
+	// }
+	// fmt.Println("[INFO] Running GAU...")
 
-	if err := gau.Run(&scan); err != nil {
-		return err
-	}
+	// if err := gau.Run(&scan); err != nil {
+	// 	return err
+	// }
 	fmt.Println("[INFO] Collecting JavaScript files...")
 
 	if err := javascript.Run(&scan); err != nil {
@@ -69,6 +73,11 @@ func Start(target string) error {
 	fmt.Println("[INFO] Running Nuclei...")
 
 	if err := nuclei.Run(&scan); err != nil {
+		return err
+	}
+	fmt.Println("[INFO] Running GitHub Search...")
+
+	if err := github.Run(&scan); err != nil {
 		return err
 	}
 	scan.EndTime = time.Now()
@@ -96,6 +105,24 @@ func Start(target string) error {
 
 		fmt.Println("--------------------------------")
 	}
+	fmt.Printf("\nGitHub Findings: %d\n", len(scan.GithubFindings))
 
+	for _, finding := range scan.GithubFindings {
+		fmt.Println("--------------------------------")
+		fmt.Println("Repository :", finding.Repository)
+		fmt.Println("File       :", finding.File)
+		fmt.Println("URL        :", finding.URL)
+	}
+	fmt.Println("[INFO] Saving Scan Results...")
+
+	if err := output.Save(&scan); err != nil {
+		return err
+	}
+	fmt.Println("[INFO] Generating HTML Report...")
+
+	if err := report.Generate(&scan); err != nil {
+		return err
+	}
+	output.Save(&scan)
 	return nil
 }
