@@ -1,0 +1,9 @@
+# Generated scan output
+output/
+
+# Reports
+*.pdf
+*.html
+
+# Scan data
+*.json
