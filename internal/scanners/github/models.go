@@ -5,10 +5,10 @@ type SearchResponse struct {
 }
 
 type Item struct {
-	Name        string `json:"name"`
-	HTMLURL     string `json:"html_url"`
-	Path        string `json:"path"`
-	Repository  Repository `json:"repository"`
+	Name       string     `json:"name"`
+	HTMLURL    string     `json:"html_url"`
+	Path       string     `json:"path"`
+	Repository Repository `json:"repository"`
 }
 
 type Repository struct {

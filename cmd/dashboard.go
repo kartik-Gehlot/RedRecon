@@ -8,6 +8,7 @@ import (
 )
 
 var dashboardCmd = &cobra.Command{
+
 	Use:   "dashboard",
 	Short: "Launch the RedRecon Dashboard",
 

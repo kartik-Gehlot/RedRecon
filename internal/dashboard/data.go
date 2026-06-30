@@ -3,10 +3,10 @@ package dashboard
 import "github.com/kartik-Gehlot/RedRecon/internal/models"
 
 type DashboardData struct {
-	Target      string
-	Version     string
-	Status      string
-	RiskScore   float64
+	Target    string
+	Version   string
+	Status    string
+	RiskScore float64
 
 	HostCount   int
 	AliveCount  int

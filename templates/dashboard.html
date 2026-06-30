@@ -1,55 +1,538 @@
-{{define "dashboard"}}
-
 <!DOCTYPE html>
 
 <html lang="en">
 
 <head>
 
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>RedRecon</title>
+    <title>RedRecon</title>
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet">
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: #1f232a;
+        }
 
+        .card {
+            border-radius: 12px;
+        }
+
+        .kpi-card {
+            min-height: 110px;
+        }
+
+        .kpi-card h1 {
+            font-size: 2.2rem;
+            margin: 0;
+        }
+
+        .kpi-card h6 {
+            font-size: .85rem;
+            margin-bottom: 10px;
+        }
+
+        .chart-card canvas {
+            height: 280px !important;
+        }
+
+        .table {
+            font-size: .9rem;
+        }
+
+        .navbar {
+            padding: .6rem 1rem;
+        }
+    </style>
 </head>
 
 <body class="bg-dark text-light">
 
-{{template "navbar" .}}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-danger shadow">
 
-<div class="container-fluid">
+        <div class="container-fluid">
 
-<div class="row">
+            <a class="navbar-brand fw-bold" href="#">
+                <i class="bi bi-shield-lock-fill"></i>
+                RedRecon Web Console
+            </a>
 
-{{template "sidebar" .}}
+            <div class="d-flex align-items-center gap-2">
 
-<main class="col-md-10 ms-sm-auto px-4 py-4">
+                <span class="badge bg-dark fs-6">
+                    🎯 {{.Target}}
+                </span>
 
-{{template "cards" .}}
+                <span class="badge bg-success fs-6">
+                    {{.Status}}
+                </span>
 
-{{template "charts" .}}
+                <span class="badge bg-primary fs-6">
+                    {{.Version}}
+                </span>
 
-{{template "table" .}}
+            </div>
 
-{{template "ai" .}}
+        </div>
 
-{{template "footer" .}}
+    </nav>
 
-</main>
 
-</div>
 
-</div>
+
+    <!-- Summary Cards -->
+
+
+    <!-- <div class="container mt-4"> -->
+    <div class="container-fluid px-4 py-4">
+
+        <div class="row g-4">
+
+            <div class="col-lg-3 col-md-6">
+
+                <div class="card text-bg-danger shadow-lg border-0">
+
+                    <div class="card-body">
+
+                        <h6 class="text-uppercase">
+                            🌐 Total Hosts
+                        </h6>
+
+                        <h1 class="fw-bold">
+                            {{.HostCount}}
+                        </h1>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+
+                <div class="card text-bg-success shadow-lg border-0">
+
+                    <div class="card-body">
+
+                        <h6 class="text-uppercase">
+                            🟢 Alive Hosts
+                        </h6>
+
+                        <h1 class="fw-bold">
+                            {{.AliveCount}}
+                        </h1>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+
+                <div class="card text-bg-secondary shadow-lg border-0">
+
+                    <div class="card-body">
+
+                        <h6 class="text-uppercase">
+                            🔴 Dead Hosts
+                        </h6>
+
+                        <h1 class="fw-bold">
+                            {{.DeadCount}}
+                        </h1>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+
+                <div class="card text-bg-primary shadow-lg border-0">
+
+                    <div class="card-body">
+
+                        <h6 class="text-uppercase">
+                            🔓 Open Ports
+                        </h6>
+
+                        <h1 class="fw-bold">
+                            {{.PortCount}}
+                        </h1>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    <!-- Charts -->
+
+    <!-- <div class="container mt-5"> -->
+    <div class="card kpi-card text-bg-danger shadow border-0">
+
+        <div class="row g-4">
+
+            <div class="col-lg-6">
+
+                <div class="card chart-card bg-dark border-secondary shadow-sm">
+
+                    <div class="card-header text-white fw-bold">
+                        🟢 Host Status
+                    </div>
+
+                    <div class="card-body">
+
+                        <!-- <canvas id="hostChart"></canvas> -->
+                        <canvas id="hostChart" height="120"></canvas>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-6">
+
+                <div class="card bg-dark border-secondary shadow">
+<h3>Risk Score = {{.RiskScore}}</h3>
+                    <div class="card-header text-white fw-bold">
+                        📊 Risk Score
+                    </div>
+
+                    <div class="card-body">
+
+                        <canvas id="riskChart"></canvas>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Search -->
+
+    <div class="container mt-5">
+
+        <div class="card bg-dark border-secondary shadow">
+
+            <div class="card-body">
+
+                <div class="input-group">
+
+                    <span class="input-group-text">
+                        🔍
+                    </span>
+
+                    <input type="text" id="searchBox" class="form-control" placeholder="Search hostname...">
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    <!-- Host Table -->
+
+    <!-- <div class="container mt-4 mb-5"> -->
+    <div class="card kpi-card text-bg-danger shadow border-0">
+
+        <div class="card bg-dark border-secondary shadow">
+
+            <div class="card-header">
+
+                🌐 Hosts
+
+            </div>
+
+            <div class="table-responsive">
+
+                <table class="table table-dark table-hover mb-0" id="hostTable">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Hostname</th>
+
+                            <th>Status</th>
+
+                            <th>HTTP</th>
+
+                            <th>Title</th>
+
+                            <th>Ports</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {{range .Hosts}}
+
+                        <tr>
+
+                            <td>{{.Hostname}}</td>
+
+                            <td>
+
+                                {{if .Alive}}
+
+                                <span class="badge bg-success">
+
+                                    Alive
+
+                                </span>
+
+                                {{else}}
+
+                                <span class="badge bg-danger">
+
+                                    Dead
+
+                                </span>
+
+                                {{end}}
+
+                            </td>
+
+                            <td>{{.StatusCode}}</td>
+
+                            <td>{{.Title}}</td>
+
+                            <td>{{.Ports}}</td>
+
+                        </tr>
+
+                        {{end}}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- AI Summary -->
+
+    <div class="container mb-5">
+
+        <div class="card bg-dark text-light border-secondary shadow-sm">
+
+            <div class="card-header bg-dark text-white">
+
+                🤖 AI Security Summary
+
+            </div>
+
+            <div class="card-body">
+
+                <h4>🤖 Executive Summary</h4>
+
+                <p>
+                    {{.AI.ExecutiveSummary}}
+                </p>
+
+                <div class="alert alert-warning">
+
+                    <strong>Risk Level:</strong>
+
+                    {{.AI.Risk}}
+
+                </div>
+                <h5 class="mt-4">Top Risks</h5>
+
+                <ul>
+
+                    {{range .AI.TopRisks}}
+
+                    <li>{{.}}</li>
+
+                    {{end}}
+
+                </ul>
+                <h5>Recommendations</h5>
+
+                <ul>
+
+                    {{range .AI.Recommendations}}
+
+                    <li>{{.}}</li>
+
+                    {{end}}
+
+                </ul>
+
+            </div>
+
+        </div>
+
+    </div>
+    <!-- Export -->
+
+    <div class="container mb-5">
+
+        <div class="card bg-dark border-secondary shadow">
+
+            <div class="card-header text-white fw-bold">
+                📥 Export
+            </div>
+
+            <div class="card-body">
+
+                <div class="d-flex flex-wrap gap-3">
+
+                    <a href="/scan.json" class="btn btn-success">
+                        <i class="bi bi-download"></i>
+                        Download JSON
+                    </a>
+
+                    <a href="/report.html" class="btn btn-primary">
+                        <i class="bi bi-file-earmark-text"></i>
+                        HTML Report
+                    </a>
+
+                    <button class="btn btn-danger">
+                        <i class="bi bi-file-earmark-pdf"></i>
+                        <a href="/report.pdf" class="btn btn-danger">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                            PDF Report
+                        </a>
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <footer class="text-center text-secondary py-4">
+
+        <hr>
+
+        <p>
+
+            🚀 RedRecon v1.0 |
+            Built with Go ❤️ |
+            Developed by Kartik Gehlot
+
+        </p>
+
+    </footer>
+    <script>
+
+     new Chart(document.getElementById("hostChart"), {
+    type: "doughnut",
+
+    data: {
+        labels: ["Alive", "Dead"],
+
+        datasets: [{
+            label: "Hosts",
+            data: [{{.AliveCount}}, {{.DeadCount}}],
+            backgroundColor: [
+                "#198754",
+                "#dc3545"
+            ]
+        }]
+    }
+});
+      new Chart(document.getElementById("riskChart"), {
+
+    type: "bar",
+
+    data: {
+
+        labels: ["Risk Score"],
+
+        datasets: [{
+
+            data: [{{.AI.RiskScore}}],
+            backgroundColor: "#dc3545",
+            borderRadius: 8,
+            barThickness: 80
+
+        }]
+
+    },
+
+    options: {
+
+        plugins: {
+
+            legend: {
+
+                display: false
+
+            }
+
+        },
+
+        scales: {
+
+            y: {
+
+                beginAtZero: true,
+                max: 10,
+                ticks: {
+
+                    stepSize: 1
+
+                }
+
+            }
+
+        }
+
+    }
+
+});
+        const searchBox = document.getElementById("searchBox");
+
+        searchBox.addEventListener("keyup", function () {
+
+            const filter = searchBox.value.toLowerCase();
+
+            const rows = document.querySelectorAll("#hostTable tbody tr");
+
+            rows.forEach(function (row) {
+
+                if (row.innerText.toLowerCase().includes(filter)) {
+
+                    row.style.display = "";
+
+                } else {
+
+                    row.style.display = "none";
+
+                }
+
+            });
+
+        });
+    </script>
 
 </body>
 
 </html>
-
-{{end}}
