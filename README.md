@@ -25,20 +25,6 @@ Building RedRecon helped me understand how to organize larger Go projects into r
 * AI-generated executive summary
 * JSON export
 
-             User
-               │
-               ▼
-          Cobra CLI
-               │
-               ▼
-        Orchestrator
-               │
- ┌─────────────┼─────────────┐
- ▼             ▼             ▼
-Scanners     AI Engine    Reports
-               │             │
-               ▼             ▼
-          Dashboard      HTML/PDF
 
 ![Flowchart](screenshots/flowchart.png)
 ---
