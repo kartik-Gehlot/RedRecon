@@ -2,13 +2,23 @@ package nuclei
 
 import (
 	"bufio"
+	"fmt"
 	"os/exec"
 
 	"github.com/kartik-Gehlot/RedRecon/internal/models"
 )
 
 func Run(scan *models.Scan) error {
+	alive := 0
 
+	for _, host := range scan.Hosts {
+		if host.Alive {
+			alive++
+		}
+
+	}
+
+	fmt.Println("Alive Hosts:", alive)
 	for i := range scan.Hosts {
 
 		if !scan.Hosts[i].Alive {

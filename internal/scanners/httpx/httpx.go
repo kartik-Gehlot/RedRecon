@@ -3,9 +3,11 @@ package httpx
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"os/exec"
 
 	"github.com/kartik-Gehlot/RedRecon/internal/models"
+	"github.com/kartik-Gehlot/RedRecon/internal/worker"
 )
 
 type Result struct {
@@ -19,7 +21,7 @@ type Result struct {
 
 func Run(scan *models.Scan) error {
 
-	for i := range scan.Hosts {
+	worker.Run(len(scan.Hosts), 10, func(i int) {
 
 		cmd := exec.Command(
 			"httpx",
@@ -33,40 +35,51 @@ func Run(scan *models.Scan) error {
 
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
-			return err
+			return
 		}
 
 		if err := cmd.Start(); err != nil {
-			return err
+			return
 		}
 
 		scanner := bufio.NewScanner(stdout)
 
 		for scanner.Scan() {
 
-			var result Result
+    fmt.Println("RAW:", scanner.Text())
 
-			if err := json.Unmarshal(scanner.Bytes(), &result); err != nil {
-				continue
-			}
+    var result Result
 
-			if result.Failed {
-				continue
-			}
+    if err := json.Unmarshal(scanner.Bytes(), &result); err != nil {
+        fmt.Println("JSON ERROR:", err)
+        continue
+    }
 
-			scan.Hosts[i].Alive = true
-			scan.Hosts[i].IP = result.HostIP
-			scan.Hosts[i].StatusCode = result.StatusCode
-			scan.Hosts[i].Title = result.Title
-			scan.Hosts[i].Technologies = result.Tech
+    fmt.Printf("PARSED: %+v\n", result)
+
+    if result.Failed {
+        fmt.Println("FAILED RESULT")
+        continue
+    }
+
+    fmt.Println("SETTING ALIVE:", scan.Hosts[i].Hostname)
+
+    scan.Hosts[i].Alive = true
+    scan.Hosts[i].IP = result.HostIP
+    scan.Hosts[i].StatusCode = result.StatusCode
+    scan.Hosts[i].Title = result.Title
+    scan.Hosts[i].Technologies = result.Tech
+}
+
+		
+		fmt.Println("Scanning:", scan.Hosts[i].Hostname)
+		if err := cmd.Wait(); err != nil {
+			fmt.Println("Wait error:", err)
+		}if err := scanner.Err(); err != nil {
+
+			    fmt.Println("Scanner error:", err)
+				
 		}
-
-		if err := scanner.Err(); err != nil {
-			return err
-		}
-
-		cmd.Wait()
-	}
-
+	})
 	return nil
 }

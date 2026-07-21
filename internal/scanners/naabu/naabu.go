@@ -7,11 +7,12 @@ import (
 	"strings"
 
 	"github.com/kartik-Gehlot/RedRecon/internal/models"
+	"github.com/kartik-Gehlot/RedRecon/internal/worker"
 )
 
 func Run(scan *models.Scan) error {
 
-	for i := range scan.Hosts {
+	worker.Run(len(scan.Hosts), 10, func(i int) {
 
 		cmd := exec.Command(
 			"naabu",
@@ -22,11 +23,11 @@ func Run(scan *models.Scan) error {
 
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
-			return err
+			return
 		}
 
 		if err := cmd.Start(); err != nil {
-			return err
+			return
 		}
 
 		scanner := bufio.NewScanner(stdout)
@@ -46,18 +47,14 @@ func Run(scan *models.Scan) error {
 				continue
 			}
 
-			scan.Hosts[i].Ports = append(
-				scan.Hosts[i].Ports,
-				port,
-			)
+			scan.Hosts[i].Ports = append(scan.Hosts[i].Ports, port)
 		}
 
 		if err := scanner.Err(); err != nil {
-			return err
+			return
 		}
 
 		cmd.Wait()
-	}
-
+	})
 	return nil
 }

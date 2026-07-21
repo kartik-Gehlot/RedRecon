@@ -40,7 +40,7 @@ Scanners     AI Engine    Reports
                ▼             ▼
           Dashboard      HTML/PDF
 
-
+![Flowchart](screenshots/flowchart.png)
 ---
 
  Why I Built This

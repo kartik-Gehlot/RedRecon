@@ -4,16 +4,13 @@ import (
 	"bufio"
 	"os/exec"
 
+	"github.com/kartik-Gehlot/RedRecon/internal/config"
 	"github.com/kartik-Gehlot/RedRecon/internal/models"
+	"github.com/kartik-Gehlot/RedRecon/internal/worker"
 )
 
 func Run(scan *models.Scan) error {
-
-	for i := range scan.Hosts {
-
-		if !scan.Hosts[i].Alive {
-			continue
-		}
+	worker.Run(len(scan.Hosts), config.Workers, func(i int) {
 
 		cmd := exec.Command(
 			"katana",
@@ -24,11 +21,11 @@ func Run(scan *models.Scan) error {
 
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
-			return err
+			return
 		}
 
 		if err := cmd.Start(); err != nil {
-			return err
+			return
 		}
 
 		scanner := bufio.NewScanner(stdout)
@@ -41,11 +38,11 @@ func Run(scan *models.Scan) error {
 		}
 
 		if err := scanner.Err(); err != nil {
-			return err
+			return
 		}
 
 		cmd.Wait()
-	}
+	})
 
 	return nil
 }

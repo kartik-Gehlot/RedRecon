@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"time"
 
 	"github.com/kartik-Gehlot/RedRecon/internal/models"
 )
@@ -38,11 +39,14 @@ func Run(scan *models.Scan) error {
 		"Bearer "+token,
 	)
 
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: 15 * time.Second,
+	}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		fmt.Printf("[WARN] GitHub Search failed: %v\n", err)
+		return nil
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
