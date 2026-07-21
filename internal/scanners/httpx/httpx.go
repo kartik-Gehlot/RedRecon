@@ -46,39 +46,39 @@ func Run(scan *models.Scan) error {
 
 		for scanner.Scan() {
 
-    fmt.Println("RAW:", scanner.Text())
+			fmt.Println("RAW:", scanner.Text())
 
-    var result Result
+			var result Result
 
-    if err := json.Unmarshal(scanner.Bytes(), &result); err != nil {
-        fmt.Println("JSON ERROR:", err)
-        continue
-    }
+			if err := json.Unmarshal(scanner.Bytes(), &result); err != nil {
+				fmt.Println("JSON ERROR:", err)
+				continue
+			}
 
-    fmt.Printf("PARSED: %+v\n", result)
+			fmt.Printf("PARSED: %+v\n", result)
 
-    if result.Failed {
-        fmt.Println("FAILED RESULT")
-        continue
-    }
+			if result.Failed {
+				fmt.Println("FAILED RESULT")
+				continue
+			}
 
-    fmt.Println("SETTING ALIVE:", scan.Hosts[i].Hostname)
+			fmt.Println("SETTING ALIVE:", scan.Hosts[i].Hostname)
 
-    scan.Hosts[i].Alive = true
-    scan.Hosts[i].IP = result.HostIP
-    scan.Hosts[i].StatusCode = result.StatusCode
-    scan.Hosts[i].Title = result.Title
-    scan.Hosts[i].Technologies = result.Tech
-}
+			scan.Hosts[i].Alive = true
+			scan.Hosts[i].IP = result.HostIP
+			scan.Hosts[i].StatusCode = result.StatusCode
+			scan.Hosts[i].Title = result.Title
+			scan.Hosts[i].Technologies = result.Tech
+		}
 
-		
 		fmt.Println("Scanning:", scan.Hosts[i].Hostname)
 		if err := cmd.Wait(); err != nil {
 			fmt.Println("Wait error:", err)
-		}if err := scanner.Err(); err != nil {
+		}
+		if err := scanner.Err(); err != nil {
 
-			    fmt.Println("Scanner error:", err)
-				
+			fmt.Println("Scanner error:", err)
+
 		}
 	})
 	return nil

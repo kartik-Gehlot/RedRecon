@@ -25,6 +25,7 @@ Building RedRecon helped me understand how to organize larger Go projects into r
 * AI-generated executive summary
 * JSON export
 
+## FLOWCHARTS
 
 ![Flowchart](screenshots/flowchart.png)
 ---
@@ -42,25 +43,10 @@ RedRecon was built to solve that problem while also helping me improve my Go pro
 
  Project Structure
 
+![Structure](screenshots/Project_Structure_1.png)
+![Structure](screenshots/Project_Structure_2.png)
 
-RedRecon/
-├── cmd/
-├── internal/
-│   ├── ai/
-│   ├── dashboard/
-│   ├── models/
-│   ├── orchestrator/
-│   ├── output/
-│   ├── pdf/
-│   ├── report/
-│   ├── scanners/
-│   └── validator/
-├── templates/
-├── output/
-├── screenshots/
-├── main.go
-├── go.mod
-└── README.md
+
 
 ## Integrated Tools
 
