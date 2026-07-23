@@ -15,7 +15,17 @@ type DashboardPage struct {
 	AI ai.Analysis
 }
 
+//	func Start() error {
+//		file, err := os.Open("output/scan.json")
+//		if err != nil {
+//			return err
+//		}
+//		defer file.Close()
 func Start() error {
+	if err := os.MkdirAll("output", 0755); err != nil {
+		return err
+	}
+
 	file, err := os.Open("output/scan.json")
 	if err != nil {
 		return err
@@ -28,18 +38,14 @@ func Start() error {
 		return err
 	}
 
-	// data := Build(&scan)
-
 	tmpl := template.Must(template.ParseFiles("templates/dashboard.html"))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		// dashboardData := Build(&scan)
-		// analysis := ai.Analyze(&scan)
 		analysis := ai.Analyze(&scan)
-
 		scan.RiskScore = analysis.RiskScore
 
 		dashboardData := Build(&scan)
+
 		page := DashboardPage{
 			DashboardData: dashboardData,
 			AI:            analysis,
@@ -49,14 +55,6 @@ func Start() error {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	})
-	// http.Handle("/report.pdf",
-	// 	http.StripPrefix("/",
-	// 		http.FileServer(http.Dir("output")),
-	// 	),
-	// )
-	// // Serve output files
-	// http.Handle("/scan.json", http.StripPrefix("/", http.FileServer(http.Dir("output"))))
-	// http.Handle("/report.html", http.StripPrefix("/", http.FileServer(http.Dir("output"))))
 
 	http.Handle("/scan.json",
 		http.StripPrefix("/", http.FileServer(http.Dir("output"))))

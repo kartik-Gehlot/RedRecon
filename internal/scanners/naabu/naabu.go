@@ -1,60 +1,61 @@
-package naabu
+package httpx
 
 import (
-	"bufio"
+	"encoding/json"
+	"fmt"
 	"os/exec"
-	"strconv"
-	"strings"
 
 	"github.com/kartik-Gehlot/RedRecon/internal/models"
-	"github.com/kartik-Gehlot/RedRecon/internal/worker"
 )
+
+type Result struct {
+	Host       string   `json:"host"`
+	HostIP     string   `json:"host_ip"`
+	StatusCode int      `json:"status_code"`
+	Title      string   `json:"title"`
+	Tech       []string `json:"tech"`
+	Failed     bool     `json:"failed"`
+}
 
 func Run(scan *models.Scan) error {
 
-	worker.Run(len(scan.Hosts), 10, func(i int) {
+	for i := range scan.Hosts {
 
 		cmd := exec.Command(
-			"naabu",
+			"httpx",
 			"-silent",
-			"-host",
+			"-json",
+			"-title",
+			"-tech-detect",
+			"-u",
 			scan.Hosts[i].Hostname,
 		)
 
-		stdout, err := cmd.StdoutPipe()
+		output, err := cmd.Output()
 		if err != nil {
-			return
+			fmt.Printf("httpx failed for %s: %v\n", scan.Hosts[i].Hostname, err)
+			continue
 		}
 
-		if err := cmd.Start(); err != nil {
-			return
+		if len(output) == 0 {
+			fmt.Printf("No output for %s\n", scan.Hosts[i].Hostname)
+			continue
 		}
 
-		scanner := bufio.NewScanner(stdout)
-
-		for scanner.Scan() {
-
-			line := scanner.Text()
-
-			parts := strings.Split(line, ":")
-
-			if len(parts) != 2 {
-				continue
-			}
-
-			port, err := strconv.Atoi(parts[1])
-			if err != nil {
-				continue
-			}
-
-			scan.Hosts[i].Ports = append(scan.Hosts[i].Ports, port)
+		var result Result
+		if err := json.Unmarshal(output, &result); err != nil {
+			fmt.Printf("JSON error for %s: %v\n", scan.Hosts[i].Hostname, err)
+			continue
 		}
 
-		if err := scanner.Err(); err != nil {
-			return
-		}
+		fmt.Printf("Alive: %s (%d)\n", scan.Hosts[i].Hostname, result.StatusCode)
 
-		cmd.Wait()
-	})
+		scan.Hosts[i].Alive = true
+		scan.Hosts[i].IP = result.HostIP
+		scan.Hosts[i].StatusCode = result.StatusCode
+		scan.Hosts[i].Title = result.Title
+		scan.Hosts[i].Technologies = result.Tech
+	}
+
 	return nil
 }

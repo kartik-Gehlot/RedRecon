@@ -1,7 +1,6 @@
 package httpx
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"os/exec"
@@ -33,53 +32,32 @@ func Run(scan *models.Scan) error {
 			scan.Hosts[i].Hostname,
 		)
 
-		stdout, err := cmd.StdoutPipe()
+		output, err := cmd.Output()
 		if err != nil {
+			fmt.Println("httpx error:", err)
 			return
 		}
 
-		if err := cmd.Start(); err != nil {
+		if len(output) == 0 {
 			return
 		}
 
-		scanner := bufio.NewScanner(stdout)
-
-		for scanner.Scan() {
-
-			fmt.Println("RAW:", scanner.Text())
-
-			var result Result
-
-			if err := json.Unmarshal(scanner.Bytes(), &result); err != nil {
-				fmt.Println("JSON ERROR:", err)
-				continue
-			}
-
-			fmt.Printf("PARSED: %+v\n", result)
-
-			if result.Failed {
-				fmt.Println("FAILED RESULT")
-				continue
-			}
-
-			fmt.Println("SETTING ALIVE:", scan.Hosts[i].Hostname)
-
-			scan.Hosts[i].Alive = true
-			scan.Hosts[i].IP = result.HostIP
-			scan.Hosts[i].StatusCode = result.StatusCode
-			scan.Hosts[i].Title = result.Title
-			scan.Hosts[i].Technologies = result.Tech
+		var result Result
+		if err := json.Unmarshal(output, &result); err != nil {
+			fmt.Println("JSON error:", err)
+			return
 		}
 
-		fmt.Println("Scanning:", scan.Hosts[i].Hostname)
-		if err := cmd.Wait(); err != nil {
-			fmt.Println("Wait error:", err)
+		if result.Failed {
+			return
 		}
-		if err := scanner.Err(); err != nil {
 
-			fmt.Println("Scanner error:", err)
-
-		}
+		scan.Hosts[i].Alive = true
+		scan.Hosts[i].IP = result.HostIP
+		scan.Hosts[i].StatusCode = result.StatusCode
+		scan.Hosts[i].Title = result.Title
+		scan.Hosts[i].Technologies = result.Tech
 	})
+
 	return nil
 }

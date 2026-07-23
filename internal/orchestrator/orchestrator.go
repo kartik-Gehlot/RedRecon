@@ -32,7 +32,7 @@ func Start(target string) error {
 	scan := models.Scan{
 		Target:    target,
 		Status:    "Running",
-		Version:   "v0.1.0",
+		Version:   "v2.0.0",
 		StartTime: time.Now(),
 	}
 
@@ -84,59 +84,38 @@ func Start(target string) error {
 	start = time.Now()
 	logger.Info("Running Katana & GAU...")
 
-	wg.Add(2)
-
-	var katanaErr error
-	var gauErr error
-
-	go func() {
-		defer wg.Done()
-		katanaErr = katana.Run(&scan)
-	}()
-
-	go func() {
-		defer wg.Done()
-		gauErr = gau.Run(&scan)
-	}()
-
-	wg.Wait()
-
-	if katanaErr != nil {
-		return katanaErr
+	logger.Info("Running Katana")
+	if err := katana.Run(&scan); err != nil {
+		return err
 	}
+	logger.Success("Katana completed")
 
-	if gauErr != nil {
-		return gauErr
+	logger.Info("Running GAU")
+	if err := gau.Run(&scan); err != nil {
+		return err
 	}
+	logger.Success("GAU completed")
+
 	logger.Success("Katana & GAU completed")
 	stats.Record("Katana & GAU", start)
 	start = time.Now()
-	logger.Info("Running JavaScript & GitHub Search...")
+	start = time.Now()
 
-	wg.Add(2)
+	logger.Info("Running JavaScript...")
 
-	var jsErr error
-	var githubErr error
+	if err := javascript.Run(&scan); err != nil {
+		return err
+	}
+	logger.Success("JavaScript completed")
 
-	go func() {
-		defer wg.Done()
-		jsErr = javascript.Run(&scan)
-	}()
+	logger.Info("Running GitHub Search...")
 
-	go func() {
-		defer wg.Done()
-		githubErr = github.Run(&scan)
-	}()
-
-	wg.Wait()
-
-	if jsErr != nil {
-		return jsErr
+	if err := github.Run(&scan); err != nil {
+		logger.Warning(fmt.Sprintf("GitHub Search failed: %v", err))
+	} else {
+		logger.Success("GitHub Search completed")
 	}
 
-	if githubErr != nil {
-		return githubErr
-	}
 	logger.Success("JavaScript & GitHub Search completed")
 	stats.Record("JavaScript & GitHub Search", start)
 
