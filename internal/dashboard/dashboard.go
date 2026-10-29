@@ -22,6 +22,7 @@ type DashboardPage struct {
 //			return err
 //		}
 //		defer file.Close()
+
 func Start() error {
 	if err := os.MkdirAll("output", 0755); err != nil {
 		return err
@@ -31,27 +32,23 @@ func Start() error {
 
 	file, err := os.Open("output/scan.json")
 	if err == nil {
-		defer file.Close()
-
-		if err := json.NewDecoder(file).Decode(&scan); err != nil {
-			return err
+		if decodeErr := json.NewDecoder(file).Decode(&scan); decodeErr != nil {
+			file.Close()
+			return decodeErr
 		}
+		file.Close()
 	} else if !os.IsNotExist(err) {
 		return err
 	}
 
-	// Continue loading the template and starting the dashboard.
-	defer file.Close()
-
-	// var scan models.Scan
-
-	if err := json.NewDecoder(file).Decode(&scan); err != nil {
+	tmpl, err := template.ParseFiles("templates/dashboard.html")
+	if err != nil {
 		return err
 	}
 
-	tmpl := template.Must(template.ParseFiles("templates/dashboard.html"))
+	mux := http.NewServeMux()
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		analysis := ai.Analyze(&scan)
 		scan.RiskScore = analysis.RiskScore
 
@@ -67,16 +64,15 @@ func Start() error {
 		}
 	})
 
-	http.Handle("/scan.json",
-		http.StripPrefix("/", http.FileServer(http.Dir("output"))))
-
-	http.Handle("/report.html",
-		http.StripPrefix("/", http.FileServer(http.Dir("output"))))
-
-	http.Handle("/report.pdf",
-		http.StripPrefix("/", http.FileServer(http.Dir("output"))))
-
-	// return http.ListenAndServe(":8080", nil)
+	mux.Handle("/scan.json", http.StripPrefix(
+		"/", http.FileServer(http.Dir("output")),
+	))
+	mux.Handle("/report.html", http.StripPrefix(
+		"/", http.FileServer(http.Dir("output")),
+	))
+	mux.Handle("/report.pdf", http.StripPrefix(
+		"/", http.FileServer(http.Dir("output")),
+	))
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -84,6 +80,5 @@ func Start() error {
 	}
 
 	logger.Info("Dashboard listening on port " + port)
-	return http.ListenAndServe(":"+port, nil)
-
+	return http.ListenAndServe(":"+port, mux)
 }
