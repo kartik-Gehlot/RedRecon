@@ -29,18 +29,18 @@ func Start() error {
 
 	var scan models.Scan
 
-file, err := os.Open("output/scan.json")
-if err == nil {
-    defer file.Close()
+	file, err := os.Open("output/scan.json")
+	if err == nil {
+		defer file.Close()
 
-    if err := json.NewDecoder(file).Decode(&scan); err != nil {
-        return err
-    }
-} else if !os.IsNotExist(err) {
-    return err
-}
+		if err := json.NewDecoder(file).Decode(&scan); err != nil {
+			return err
+		}
+	} else if !os.IsNotExist(err) {
+		return err
+	}
 
-// Continue loading the template and starting the dashboard.
+	// Continue loading the template and starting the dashboard.
 	defer file.Close()
 
 	// var scan models.Scan
@@ -78,12 +78,12 @@ if err == nil {
 
 	// return http.ListenAndServe(":8080", nil)
 
-port := os.Getenv("PORT")
-if port == "" {
-    port = "8080"
-}
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 
-logger.Info("Dashboard listening on port " + port)
-return http.ListenAndServe(":"+port, nil)
+	logger.Info("Dashboard listening on port " + port)
+	return http.ListenAndServe(":"+port, nil)
 
 }
