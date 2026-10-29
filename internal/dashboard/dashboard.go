@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/kartik-Gehlot/RedRecon/internal/ai"
+	"github.com/kartik-Gehlot/RedRecon/internal/logger"
 	"github.com/kartik-Gehlot/RedRecon/internal/models"
 )
 
@@ -26,13 +27,23 @@ func Start() error {
 		return err
 	}
 
-	file, err := os.Open("output/scan.json")
-	if err != nil {
-		return err
-	}
+	var scan models.Scan
+
+file, err := os.Open("output/scan.json")
+if err == nil {
+    defer file.Close()
+
+    if err := json.NewDecoder(file).Decode(&scan); err != nil {
+        return err
+    }
+} else if !os.IsNotExist(err) {
+    return err
+}
+
+// Continue loading the template and starting the dashboard.
 	defer file.Close()
 
-	var scan models.Scan
+	// var scan models.Scan
 
 	if err := json.NewDecoder(file).Decode(&scan); err != nil {
 		return err
@@ -65,5 +76,14 @@ func Start() error {
 	http.Handle("/report.pdf",
 		http.StripPrefix("/", http.FileServer(http.Dir("output"))))
 
-	return http.ListenAndServe(":8080", nil)
+	// return http.ListenAndServe(":8080", nil)
+
+port := os.Getenv("PORT")
+if port == "" {
+    port = "8080"
+}
+
+logger.Info("Dashboard listening on port " + port)
+return http.ListenAndServe(":"+port, nil)
+
 }
